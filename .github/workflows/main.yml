@@ -35,4 +35,4 @@ jobs:
       - name: Push Docker Image to Azure Container Registry
         run: |
           echo ${{ secrets.AZURE_ACR_PASSWORD }} | docker login supportdeskback.azurecr.io --username ${{ secrets.AZURE_ACR_USERNAME }} --password-stdin
-          docker push supportdeskback.azurecr.io/my-jenkins-image:latest
+          docker push supportdeskback.azurecr.io/root-jenkins-image:latest
