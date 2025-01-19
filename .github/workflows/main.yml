@@ -30,7 +30,7 @@ jobs:
 
       - name: Tag Docker Image
         run: |
-          docker tag root-jenkins-image supportdeskback.azurecr.io/root-jenkins-image:latest .
+          docker tag root-jenkins-image supportdeskback.azurecr.io/root-jenkins-image:latest
 
       - name: Push Docker Image to Azure Container Registry
         run: |
