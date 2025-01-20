@@ -1,33 +1,36 @@
 FROM jenkins/jenkins:lts-jdk17
+
 USER root
 
 RUN apt-get update && \
-    apt-get install -y sudo curl lsb-release apt-transport-https gnupg2 && \
-    curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add - && \
-    curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list | sudo tee /etc/apt/sources.list.d/microsoft-prod.list && \
-    sudo apt-get update && \
-    sudo apt-get install -y blobfuse
+    apt-get install -y sudo curl lsb-release apt-transport-https gnupg2 git && \
+    mkdir /mnt/blob
 
-RUN mkdir /mnt/blob
+# Install Go
+RUN curl -OL https://golang.org/dl/go1.18.8.linux-amd64.tar.gz && \
+    tar -C /usr/local -xvzf go1.18.8.linux-amd64.tar.gz && \
+    rm go1.18.8.linux-amd64.tar.gz && \
+    echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
 
-# Add jenkins user to sudo group
+RUN git clone https://github.com/Azure/azure-storage-fuse /mnt/blob/azure-storage-fuse && \
+    cd /mnt/blob/azure-storage-fuse && \
+    sudo apt install fuse3 libfuse3-dev gcc -y && \
+    go build -o blobfuse2
+
 RUN usermod -aG sudo jenkins
-# Allow jenkins to use sudo without password
 RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-# Set passwords
 RUN echo 'root:root' | chpasswd
 RUN echo 'jenkins:jenkins' | chpasswd
 
-# Create an entrypoint script to handle permissions
-RUN echo '#!/bin/bash\n\
-sudo chown -R jenkins:jenkins /var/jenkins_home\n\
-exec /sbin/tini -- /usr/local/bin/jenkins.sh' > /usr/local/bin/jenkins-entrypoint.sh && \
-    chmod +x /usr/local/bin/jenkins-entrypoint.sh
+COPY jenkins-entrypoint.sh /usr/local/bin/jenkins-entrypoint.sh
 
-    # Dockerfile: You already have blobfuse installed
-RUN apt-get update && \
-apt-get install -y blobfuse
+RUN chmod +x /usr/local/bin/jenkins-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/jenkins-entrypoint.sh"]
+
+WORKDIR /var/jenkins_home
 
 USER jenkins
-ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
+
+EXPOSE 8080
