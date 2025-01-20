@@ -2,20 +2,23 @@ FROM jenkins/jenkins:lts-jdk17
 
 USER root
 
+# Install required packages
 RUN apt-get update && \
-    apt-get install -y sudo curl lsb-release apt-transport-https gnupg2 git && \
+    apt-get install -y --no-install-recommends \
+        sudo curl lsb-release apt-transport-https gnupg2 \
+        && rm -rf /var/lib/apt/lists/*
+
+# Copy the blobfuse2 deb file into the image
+COPY blobfuse2*.deb /tmp/
+
+# Install the deb file
+RUN dpkg -i /tmp/blobfuse2*.deb \
+    && apt-get install -y -f \
+    && rm -rf /tmp/blobfuse2*.deb
+
+
+RUN apt-get install -y sudo curl lsb-release apt-transport-https gnupg2 blobfuse2 && \
     mkdir /mnt/blob
-
-# Install Go
-RUN curl -OL https://golang.org/dl/go1.18.8.linux-amd64.tar.gz && \
-    tar -C /usr/local -xvzf go1.18.8.linux-amd64.tar.gz && \
-    rm go1.18.8.linux-amd64.tar.gz && \
-    echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
-
-RUN git clone https://github.com/Azure/azure-storage-fuse /mnt/blob/azure-storage-fuse && \
-    cd /mnt/blob/azure-storage-fuse && \
-    sudo apt install fuse3 libfuse3-dev gcc -y && \
-    go build -o blobfuse2
 
 RUN usermod -aG sudo jenkins
 RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
