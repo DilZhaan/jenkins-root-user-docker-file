@@ -11,14 +11,15 @@ RUN apt-get update && \
 # Copy the blobfuse2 deb file into the image
 COPY blobfuse2*.deb /tmp/
 
-# Install the deb file
+
+RUN apt-get update && apt-get install -y sudo curl lsb-release apt-transport-https gnupg2 blobfuse2 && \
+    mkdir /mnt/blob
+
 RUN dpkg -i /tmp/blobfuse2*.deb \
+    &&  apt-get install -y fuse3 \
     && apt-get install -y -f \
     && rm -rf /tmp/blobfuse2*.deb
 
-
-RUN apt-get install -y sudo curl lsb-release apt-transport-https gnupg2 blobfuse2 && \
-    mkdir /mnt/blob
 
 RUN usermod -aG sudo jenkins
 RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
