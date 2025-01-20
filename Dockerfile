@@ -12,11 +12,10 @@ RUN apt-get update && \
 COPY blobfuse2*.deb /tmp/
 
 
-RUN apt-get update && apt-get install -y sudo curl lsb-release apt-transport-https gnupg2 && \
+RUN apt-get update && apt-get install -y sudo curl lsb-release apt-transport-https gnupg2 fuse3 && \
     mkdir /mnt/blob
 
 RUN dpkg -i /tmp/blobfuse2*.deb \
-    &&  apt-get install -y fuse3 \
     && apt-get install -y -f \
     && rm -rf /tmp/blobfuse2*.deb
 
