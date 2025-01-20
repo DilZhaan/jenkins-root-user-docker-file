@@ -25,5 +25,9 @@ sudo chown -R jenkins:jenkins /var/jenkins_home\n\
 exec /sbin/tini -- /usr/local/bin/jenkins.sh' > /usr/local/bin/jenkins-entrypoint.sh && \
     chmod +x /usr/local/bin/jenkins-entrypoint.sh
 
+    # Dockerfile: You already have blobfuse installed
+RUN apt-get update && \
+apt-get install -y blobfuse
+
 USER jenkins
 ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
