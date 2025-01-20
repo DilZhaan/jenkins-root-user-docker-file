@@ -7,3 +7,4 @@ RUN usermod -u 1000 jenkins && groupmod -g 1000 jenkins
 RUN mkdir -p /var/jenkins_home/workspace && \
     chown -R jenkins:jenkins /var/jenkins_home
 USER jenkins
+ENTRYPOINT ["/bin/bash", "-c", "chown -R jenkins:jenkins /var/jenkins_home && exec java -jar /usr/share/jenkins/jenkins.war --httpPort=8085"]
