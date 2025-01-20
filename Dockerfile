@@ -10,6 +10,20 @@ RUN apt-get update && \
 
 RUN mkdir /mnt/blob
 
+# Add jenkins user to sudo group
+RUN usermod -aG sudo jenkins
+# Allow jenkins to use sudo without password
+RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Set passwords
 RUN echo 'root:root' | chpasswd
 RUN echo 'jenkins:jenkins' | chpasswd
+
+# Create an entrypoint script to handle permissions
+RUN echo '#!/bin/bash\n\
+sudo chown -R jenkins:jenkins /var/jenkins_home\n\
+exec /sbin/tini -- /usr/local/bin/jenkins.sh' > /usr/local/bin/jenkins-entrypoint.sh && \
+    chmod +x /usr/local/bin/jenkins-entrypoint.sh
+
 USER jenkins
+ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
