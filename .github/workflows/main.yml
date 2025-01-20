@@ -36,3 +36,12 @@ jobs:
         run: |
           echo ${{ secrets.AZURE_ACR_PASSWORD }} | docker login supportdeskback.azurecr.io --username ${{ secrets.AZURE_ACR_USERNAME }} --password-stdin
           docker push supportdeskback.azurecr.io/root-jenkins-image:latest
+          - name: Restart Azure Container Instance
+          uses: azure/aci-deploy@v1
+          with:
+            resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+            name: ${{ secrets.ACI_NAME }}
+            image: supportdeskback.azurecr.io/support_desk_back
+            registry-login-server: supportdeskback.azurecr.io
+            registry-username: ${{ secrets.AZURE_ACR_USERNAME }}
+            registry-password: ${{ secrets.AZURE_ACR_PASSWORD }}
